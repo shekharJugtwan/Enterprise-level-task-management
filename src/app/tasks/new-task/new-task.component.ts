@@ -2,7 +2,7 @@ import { Component, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { TasksService } from '../tasks.service';
-import { Router, RouterLink } from '@angular/router';
+import {  CanDeactivateFn, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-new-task',
@@ -15,12 +15,14 @@ export class NewTaskComponent {
   private router = inject(Router);
 
   userId = input.required<string>();
+  submitted = false;
   enteredTitle = signal('');
   enteredSummary = signal('');
   enteredDate = signal('');
   private tasksService = inject(TasksService);
 
   onSubmit() {
+    this.submitted=true;
     this.tasksService.addTask(
       {
         title: this.enteredTitle(),
@@ -33,4 +35,15 @@ export class NewTaskComponent {
       replaceUrl:true
     })
   }
+}
+
+export const cantleaveEditPage : CanDeactivateFn<NewTaskComponent> = (component) => {
+  if(component.submitted)
+  {
+    return true;
+  }
+  if(component.enteredTitle() || component.enteredSummary() || component.enteredDate()){
+    return window.confirm('all the data will we be erased if you continue to leave')
+  }
+  return true;
 }
